@@ -21,8 +21,11 @@ class Home extends StatelessWidget {
             ],
             borderRadius: BorderRadius.circular(15.0),
             color: const Color(0xfff5f5f5)),
-        child: Column(
-          children: [
+        child: SizedBox(
+          width: 300,
+          height: 245,
+          child:Column(
+                children: [
             _gap(),
             const Center(
               child: Column(
@@ -66,7 +69,9 @@ class Home extends StatelessWidget {
               ),
             )
           ],
-        ));
+        )
+        )
+        );
   }
 
   @override
@@ -97,17 +102,24 @@ class Home extends StatelessWidget {
                       topLeft: Radius.circular(15),
                       topRight: Radius.circular(15)),
                   color: Color(0xfff5f5f5)),
-              child: Stack(clipBehavior: Clip.none,
+              child: Stack(
+                clipBehavior: Clip.none,
                 children: [
                
                     Positioned(
                       top: -250,
+                      left:0,
+                      right:0,
                       child: Padding(
                           padding: EdgeInsets.all(30),
                           child: SizedBox(
                               height: 245, child: findTicketCard(context))),
                     ),
-                    Positioned( bottom:50,child: const CurrentBus())
+                    Positioned( 
+                      top: 90,
+                      left:0,
+                      right:0,
+                      child: const CurrentBus())
                   ],
                 ),
             ),
