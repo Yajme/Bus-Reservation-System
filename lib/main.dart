@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bus_reservation_system/home.dart';
-import 'package:flutter/widgets.dart';
+import 'package:bus_reservation_system/tickets.dart';
 
 /*
 Colors: 3DCAA0
@@ -11,7 +11,7 @@ void main() {
   runApp(const MainApp());
 }
 /*
-TODO: 1. Home Page
+TODO: 1. Home Page 
 TODO: 2. Tickets
 TODO: 3. Profile
 TODO: 4. Map Route
@@ -25,26 +25,55 @@ class MainApp extends StatefulWidget {
 }
 
 class MainAppState extends State<MainApp> {
+  //CurrentIndex of page
+  int _selectedIndex = 0;
+
+  // List of pages to display
+  final List<Widget> _pages = [
+    Home(),
+    TicketList(),
+    Home(), //<- Replace with Profile Page
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Bus Reservation System',
-        theme: ThemeData(),
-        color: Color(0xff3DCAA0),
-        home: Scaffold(
-          appBar: AppBar(
-            title: Icon(Icons.pin_drop),
+        theme: ThemeData(
+          primaryColor: Color(0xff3DCAA0),
+          appBarTheme:  const AppBarTheme(
+            titleTextStyle: TextStyle(color: Color(0xfff5f5f5)),
             backgroundColor: Color(0xff3DCAA0),
-          ), // TODO: make this dynamic as well.
-          body: Home(),
-          bottomNavigationBar: BottomNavigationBar(
-            items: bottomNavBarItems,
-            selectedItemColor: Colors.teal,
+            iconTheme: IconThemeData(color: Colors.white)
           ),
-        ));
+          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+            selectedItemColor: Colors.teal,
+            unselectedItemColor: Colors.grey
+          ),
+        ),
+        home: Scaffold(
+           
+            body: IndexedStack(
+              index: _selectedIndex,
+              children: _pages,
+            ),
+            bottomNavigationBar: BottomNavigationBar(
+              items: bottomNavBarItems,
+              currentIndex: _selectedIndex,
+              onTap: _onItemTapped,
+            )
+            )
+            );
   }
 }
+
 
 const List<BottomNavigationBarItem> bottomNavBarItems = [
   BottomNavigationBarItem(

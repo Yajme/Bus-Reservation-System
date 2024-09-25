@@ -1,78 +1,17 @@
 import 'package:flutter/material.dart';
 
-class Home extends StatelessWidget {
+/*
+
+
+ appBar: AppBar(
+              title: const Icon(Icons.pin_drop),
+              backgroundColor: const Color(0xff3DCAA0),
+            ), // TODO: make this dynamic as well.
+ */
+class Home extends StatelessWidget { //TODO : Change this to Stateful
   const Home({super.key});
 
-  Widget _gap() => const SizedBox(height: 20);
-  Widget findTicketCard(BuildContext context) {
-    return Container(
-        decoration: BoxDecoration(
-         border: Border.all(
-          color: Color(0xff636E72),
-          width: 0.3
-         ),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 10,
-              spreadRadius: -12,
-              offset: const Offset(0,25),
-              color: Color(0xff2D3436).withOpacity(.25)
-              )
-            ],
-            borderRadius: BorderRadius.circular(15.0),
-            color: const Color(0xfff5f5f5)),
-        child: SizedBox(
-          width: 300,
-          height: 245,
-          child:Column(
-                children: [
-            _gap(),
-            const Center(
-              child: Column(
-                children: [
-                  Text(
-                    "Current Location",
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                  Text(
-                    "Lipa City",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    "Destination",
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                  Text(
-                    "Malvar, Batangas",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-            _gap(),
-            SizedBox(height: 40),
-            // Button (for future actions)
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Handle button press
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 60, vertical: 15),
-                ),
-                child: Text('Find Tickets'),
-              ),
-            )
-          ],
-        )
-        )
-        );
-  }
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -80,8 +19,7 @@ class Home extends StatelessWidget {
       backgroundColor: Color(0xff3DCAA0),
       appBar: AppBar(
         backgroundColor: Color(0xff3DCAA0),
-        title: Text(
-            'Explore new place. Get new experience'), // TODO: change this to dynamic widget based on page
+        title: Text('Explore new place. Get new experience'), // TODO: change this to dynamic widget based on page
         centerTitle: true,
       ),
       body: Center(
@@ -113,7 +51,9 @@ class Home extends StatelessWidget {
                       child: Padding(
                           padding: EdgeInsets.all(30),
                           child: SizedBox(
-                              height: 245, child: findTicketCard(context))),
+                              height: 245, child: FindTicket()
+                              )
+                              ),
                     ),
                     Positioned( 
                       top: 90,
@@ -130,7 +70,94 @@ class Home extends StatelessWidget {
     );
   }
 }
+class FindTicket extends StatelessWidget{
 
+Widget _gap()=>  const SizedBox(height:20);
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: BoxDecoration(
+         border: Border.all(
+          color: Color(0xff636E72),
+          width: 0.3
+         ),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 10,
+              spreadRadius: -12,
+              offset: const Offset(0,25),
+              color: Color(0xff2D3436).withOpacity(.25)
+              )
+            ],
+            borderRadius: BorderRadius.circular(15.0),
+            color: const Color(0xfff5f5f5)),
+        child: SizedBox(
+          width: 300,
+          height: 245,
+          child:Column(
+                children: [
+            //_gap(),
+             Center(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(25),
+                    child: TextFormField( // ! TextFormField does not focus
+                      onTap: (){
+                        
+                      },
+                      autofocus: true,
+                      readOnly: false,
+                      decoration: InputDecoration(
+                        border: UnderlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        hintText: 'Current Location'
+                      ),
+                    )
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Destination",
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                  Text(
+                    "Malvar, Batangas",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+            /*
+            _gap(),
+            //SizedBox(height: 40),
+            // Button (for future actions)
+            Padding(
+              padding: EdgeInsets.all(30),
+              child:  Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Handle button press
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                  ),
+                  child: Text('Find Tickets'),
+                ),
+            ),
+            ),
+           */
+            //Here
+          ],
+        )
+        )
+        );
+  }
+}
 class CurrentBus extends StatelessWidget {
   const CurrentBus({super.key});
 
