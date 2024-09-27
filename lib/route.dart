@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_dash/flutter_dash.dart';
 //TODO : Using Flutter map, utilize OpenRoute
 
 class Map extends StatefulWidget {
@@ -70,9 +71,13 @@ class MapState extends State<Map> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
         appBar: AppBar(title: const Text('Route')),
-        body: FutureBuilder<Position>(
+        body: Column( children: [
+          SizedBox(
+            height: 400,
+            child:FutureBuilder<Position>(
           future: getCurrentLocation(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -83,7 +88,7 @@ class MapState extends State<Map> {
               return FlutterMap(
                 mapController: MapController(),
                 options: MapOptions(
-                  minZoom: 15,
+                  minZoom: 10,
                   initialCenter: LatLng(13.8841052, 121.2643181),
                   onLongPress: (position, latlng) {
                     // Change the pin location
@@ -143,9 +148,134 @@ class MapState extends State<Map> {
               return const Center(child: Text('No data available'));
             }
           },
-        ));
+        )),
+        Expanded(child:SizedBox(
+          child: Container (
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black,width: .5),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(15),
+                topRight: Radius.circular(15)
+              ),
+              color: Color(0xfff5f5f5),
+            ),
+            child: BusLineRoute(), //TODO: ADD COMPONENTS
+           ),
+        )),
+        ])
+        );
   }
 }
+class BusLineRoute extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Bus Line Route',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 16),
+            
+            // First route stop
+            Row(
+              children: [
+               
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Card(
+                    color: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(children: [
+                        Icon(Icons.directions_bus, color: Colors.white),
+                        SizedBox(width: 15,),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'SM Lipa Grand Terminal',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Saturday, 21 Sept 2024 8:00am',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      )]),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // Dotted line between stops
+           const Padding(padding: EdgeInsets.only(left: 40), child: Dash(
+            direction: Axis.vertical,
+            length: 30,
+            dashLength: 4,
+            dashColor: Colors.grey,
+           )),
+            // Second route stop
+            Row(
+              children: [
+                
+                
+                SizedBox(width: 10),
+                Expanded(
+                  child: Card(
+                    color: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(children:[
+                        Icon(Icons.location_on, color: Colors.white),
+                        SizedBox(width: 15,),
+                        Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Drop-off Location',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Saturday, 21 Sept 2024 9:30am',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      )]),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+    );
+  }
+}
+
 /*
 if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

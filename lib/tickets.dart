@@ -19,14 +19,80 @@ class TicketList extends StatelessWidget{
           color: Colors.black
         )
         ),
-        child:  const Center(
+        child:   Center(
           child:SizedBox(
+
           height: 175,
           width: 305,
+          child:  Column(
+          children: [
+            SizedBox(height: 30,),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Lipa City",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "LPC",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+                Icon(Icons.arrow_forward, color: Colors.teal),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      "Malvar, Batangas",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "MLV",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "8:00 AM",
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+                Text(
+                  "9:30 AM",
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    )
         ))
         ,
-    )
-    )
+    
+    
     );
   }
   @override

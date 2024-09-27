@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bus_reservation_system/home.dart';
 import 'package:bus_reservation_system/tickets.dart';
-
+import 'package:bus_reservation_system/profile.dart';
 /*
 Colors: 3DCAA0
 F5F5F5
@@ -32,7 +32,7 @@ class MainAppState extends State<MainApp> {
   final List<Widget> _pages = [
     Home(),
     TicketList(),
-    Home(), //<- Replace with Profile Page
+    ProfilePage(), //<- Replace with Profile Page
   ];
 
   void _onItemTapped(int index) {
@@ -59,7 +59,7 @@ class MainAppState extends State<MainApp> {
           ),
         ),
         home: Scaffold(
-           
+           resizeToAvoidBottomInset: false,
             body: IndexedStack(
               index: _selectedIndex,
               children: _pages,

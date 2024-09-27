@@ -1,163 +1,244 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+class Home extends StatefulWidget{
+  Home({super.key});
 
-/*
 
+  @override
+  State<Home> createState() => StateHome();
+}
+class StateHome extends State<Home> {
 
- appBar: AppBar(
-              title: const Icon(Icons.pin_drop),
-              backgroundColor: const Color(0xff3DCAA0),
-            ), // TODO: make this dynamic as well.
- */
-class Home extends StatelessWidget { //TODO : Change this to Stateful
-  const Home({super.key});
+ String _locationMessage = '';
+ Placemark? _placemark;
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
 
- 
+  Future<void> _getCurrentLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw Exception('Location services are disabled');
+      }
 
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Location permissions are denied');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Location permissions are permanently denied');
+      }
+
+      Position position = await Geolocator.getCurrentPosition();
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+
+      Placemark place = placemarks[0];
+      
+      setState(() {
+        _placemark = placemarks[0]; // Update the Placemark property
+        _locationMessage = "${_placemark!.locality}, ${_placemark!.subAdministrativeArea},${_placemark!.name}";
+
+      });
+    } catch (e) {
+      print("error: $e");
+      setState(() {
+
+        _locationMessage = "$e";
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xff3DCAA0),
-      appBar: AppBar(
+      resizeToAvoidBottomInset: false,
         backgroundColor: Color(0xff3DCAA0),
-        title: Text('Explore new place. Get new experience'), // TODO: change this to dynamic widget based on page
-        centerTitle: true,
-      ),
-      body: Center(
-          child: Stack(
-        //alignment: AlignmentGeometry.lerp(a, b, t),
-        clipBehavior: Clip.none,
-        children: [
-          //const SizedBox(height: 30),
-          // Ticket Info Section
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 445,
-              decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(15),
-                      topRight: Radius.circular(15)),
-                  color: Color(0xfff5f5f5)),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-               
-                    Positioned(
-                      top: -250,
-                      left:0,
-                      right:0,
-                      child: Padding(
-                          padding: EdgeInsets.all(30),
-                          child: SizedBox(
-                              height: 245, child: FindTicket()
-                              )
-                              ),
-                    ),
-                    Positioned( 
-                      top: 90,
-                      left:0,
-                      right:0,
-                      child: const CurrentBus())
-                  ],
-                ),
-            ),
-          ),
-          //Positioned( bottom:50,child: const CurrentBus()),
-        ],
-      )),
-    );
-  }
-}
-class FindTicket extends StatelessWidget{
+        appBar: AppBar(
+          backgroundColor: Color(0xff3DCAA0),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+            Text(DateFormat('EEEE, d MMMM y').format(DateTime.now())),
+            SizedBox(height: 5,),
+            Row(
+              children: [
+                Opacity(opacity: 0.5,child:Icon(Icons.location_pin,size :12,),),
+                SizedBox(width: 5,),
+                Text(_locationMessage,style: TextStyle(color: Color(0xfff5f5f5).withOpacity(0.5)),)
+                ]
 
-Widget _gap()=>  const SizedBox(height:20);
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        decoration: BoxDecoration(
-         border: Border.all(
-          color: Color(0xff636E72),
-          width: 0.3
-         ),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 10,
-              spreadRadius: -12,
-              offset: const Offset(0,25),
-              color: Color(0xff2D3436).withOpacity(.25)
-              )
-            ],
-            borderRadius: BorderRadius.circular(15.0),
-            color: const Color(0xfff5f5f5)),
-        child: SizedBox(
-          width: 300,
-          height: 245,
-          child:Column(
-                children: [
-            //_gap(),
-             Center(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(25),
-                    child: TextFormField( // ! TextFormField does not focus
-                      onTap: (){
-                        
-                      },
-                      autofocus: true,
-                      readOnly: false,
-                      decoration: InputDecoration(
-                        border: UnderlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
+            )
+          ],)
+
+        ),
+        body: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Align(
+                alignment: Alignment.bottomCenter,
+                  child: Container(
+                    height: 445,
+                    decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(15),
+                            topRight: Radius.circular(15)),
+                        color: Color(0xfff5f5f5)),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 150,
                         ),
-                        hintText: 'Current Location'
-                      ),
-                    )
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    "Destination",
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                  Text(
-                    "Malvar, Batangas",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-            /*
-            _gap(),
-            //SizedBox(height: 40),
-            // Button (for future actions)
-            Padding(
-              padding: EdgeInsets.all(30),
-              child:  Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Handle button press
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                        const CurrentBus()
+                      ],
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 60, vertical: 15),
                   ),
-                  child: Text('Find Tickets'),
                 ),
-            ),
-            ),
-           */
-            //Here
+            Positioned(
+                left: 0,
+                right: 0,
+                top: 75,
+                child:
+                    Padding(padding: EdgeInsets.all(30), child: _placemark != null
+                  ? FindTicket(placemark: _placemark!)
+                  : CircularProgressIndicator(),)),
           ],
-        )
         )
         );
   }
 }
+class FindTicket extends StatefulWidget{
+  final Placemark placemark;
+  FindTicket({super.key, required this.placemark});
+
+  @override
+  State<FindTicket> createState() =>StateFindTicket();
+}
+class StateFindTicket extends State<FindTicket> {
+  TextEditingController _dateController = TextEditingController();
+  final TextEditingController _currentLocation = TextEditingController();
+ final TextEditingController _destination = TextEditingController();
+  Widget _gap() => const SizedBox(height: 20);
+  @override
+  Widget build(BuildContext context) {
+    final placemark = widget.placemark;
+    setState(() {
+      //subAdministrativeArea == Province
+      //administrativeArea == Region
+      _currentLocation.text = "${placemark.locality},${placemark.subAdministrativeArea}";
+    });
+    Future<void> _selectDate() async {
+    DateTime?_picked = await showDatePicker(
+      context: context, 
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000), 
+      lastDate: DateTime(2100)
+      );
+
+      if(_picked != null){
+        setState((){
+          _dateController.text = _picked.toString().split(" ")[0];
+        });
+      }
+  }
+    return Container(
+        decoration: BoxDecoration(
+            border: Border.all(color: Color(0xff636E72), width: 0.3),
+            boxShadow: [
+              BoxShadow(
+                  blurRadius: 10,
+                  spreadRadius: -12,
+                  offset: const Offset(0, 25),
+                  color: Color(0xff2D3436).withOpacity(.25))
+            ],
+            borderRadius: BorderRadius.circular(15.0),
+            color: const Color(0xfff5f5f5)),
+        child: SizedBox(
+            width: 300,
+            height: 300,
+            child: Column(
+              children: [
+                Padding(padding: EdgeInsets.all(9),child: TextFormField(
+                  controller: _currentLocation,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(15.0))
+                    ),
+                    labelText: 'Current Location',
+                  ),
+                ),),
+               Padding(padding: EdgeInsets.all(13),child: TextFormField(
+                controller: _destination,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(15.0))
+                    ),
+                    labelText: 'Destination',
+                  ),
+                ),),
+                                 Padding(
+                  padding: const EdgeInsets.all(13),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _dateController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                            ),
+                            labelText: 'Date',
+                            prefixIcon: Icon(Icons.calendar_today),
+                          ),
+                          readOnly: true,
+                          onTap: (){
+                            _selectDate();
+                          },
+                        ),
+                      ),SizedBox(width: 15,),
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(15.0)),
+                            ),
+                            labelText: 'Seat',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                    padding: EdgeInsets.all(3),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Handle search trips action
+                      },
+                      child: Text("Search Trips"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xff3DCAA0),
+                        foregroundColor: Color(0xfff5f5f5),
+                        minimumSize: Size(double.infinity, 50),
+                        textStyle: TextStyle(fontSize: 16),
+                      ),
+                    )),
+              ],
+            )
+            )
+            );
+            
+  }
+  
+}
+
 class CurrentBus extends StatelessWidget {
   const CurrentBus({super.key});
 
