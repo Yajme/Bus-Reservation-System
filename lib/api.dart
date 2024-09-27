@@ -1,9 +1,9 @@
 
 
-const String baseUrl = 'https://api.openrouteservice.org/v2/directions/driving-car';
-const String apiKey = '';
+const String baseUrl = 'https://bus-reservation-system-api.vercel.app';
+
 
 getRouteUrl(String startPoint, String endPoint){
-  print('$baseUrl?api_key=$apiKey&start=$startPoint&end=$endPoint');
-  return Uri.parse('$baseUrl?api_key=$apiKey&start=$startPoint&end=$endPoint');
+  print('$baseUrl/start/$startPoint/end/$endPoint');
+  return Uri.parse('$baseUrl/map/start/$startPoint/end/$endPoint');
 }
