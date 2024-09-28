@@ -9,7 +9,8 @@ import 'package:flutter_dash/flutter_dash.dart';
 //TODO : Using Flutter map, utilize OpenRoute
 
 class Map extends StatefulWidget {
-  Map({super.key});
+  final LatLng destination;
+  Map({super.key, required this.destination});
   @override
   MapState createState() => MapState();
 }
@@ -71,7 +72,7 @@ class MapState extends State<Map> {
 
   @override
   Widget build(BuildContext context) {
-
+    final destination = widget.destination;
     return Scaffold(
         appBar: AppBar(title: const Text('Route')),
         body: Column( children: [
@@ -89,7 +90,7 @@ class MapState extends State<Map> {
                 mapController: MapController(),
                 options: MapOptions(
                   minZoom: 10,
-                  initialCenter: LatLng(13.8841052, 121.2643181),
+                  initialCenter: LatLng(snapshot.data!.latitude, snapshot.data!.longitude),
                   onLongPress: (position, latlng) {
                     // Change the pin location
                   },
@@ -113,7 +114,7 @@ class MapState extends State<Map> {
                             onPressed: () {},
                           )),
                       Marker(
-                          point: LatLng(13.8841052, 121.2643181),
+                          point: destination, //<-Destination
                           width: 50,
                           height: 50,
                           child: IconButton(
@@ -126,7 +127,7 @@ class MapState extends State<Map> {
           FutureBuilder<List<LatLng>>(
               future: getCoordinates(
                   "${snapshot.data!.longitude},${snapshot.data!.latitude}",
-                  "121.2643181,13.88410520"),
+                  "${destination.longitude},${destination.latitude}"),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());

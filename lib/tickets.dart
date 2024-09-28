@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:bus_reservation_system/route.dart';
+import 'package:latlong2/latlong.dart';
 
 //TODO : ListView of Cards
 class TicketList extends StatelessWidget{
@@ -10,7 +11,7 @@ class TicketList extends StatelessWidget{
       padding: const EdgeInsets.all(25),
       child: GestureDetector(
         onTap: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> Map()));
+          Navigator.push(context, MaterialPageRoute(builder: (context)=> Map(destination: LatLng(14.020316,121.167656),)));
         },
       child:Container(
       decoration: BoxDecoration(
