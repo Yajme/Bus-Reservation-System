@@ -1,10 +1,19 @@
+import 'package:bus_reservation_system/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:bus_reservation_system/components/card.dart';
+import 'package:provider/provider.dart';
+import 'package:bus_reservation_system/tickets.dart';
+import 'package:bus_reservation_system/components/filter.dart';
+import 'package:bus_reservation_system/model/globals.dart' as global;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:bus_reservation_system/model/trip_json_model.dart';
 class Home extends StatefulWidget {
+  
   Home({super.key});
 
   @override
@@ -13,12 +22,17 @@ class Home extends StatefulWidget {
 
 class StateHome extends State<Home> {
   String _locationMessage = '';
+
   Placemark? _placemark;
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
+
+    
   }
+
+
 
   Future<void> _getCurrentLocation() async {
     try {
@@ -43,7 +57,7 @@ class StateHome extends State<Home> {
       List<Placemark> placemarks =
           await placemarkFromCoordinates(position.latitude, position.longitude);
 
-      Placemark place = placemarks[0];
+      
 
       setState(() {
         _placemark = placemarks[0]; // Update the Placemark property
@@ -107,13 +121,13 @@ class StateHome extends State<Home> {
                     SizedBox(
                       height: 150,
                     ),
-                    HeaderText(text: 'Current Bus'),
-                    TripCard(pickupLocation: "Lipa", destination: "Malvar", arrival: "9:30am", departure: "8:00am"),
+                    const HeaderText(text: 'Current Bus'),
+                    const CurrentBus(),
                     SizedBox(
                       height: 15,
                     ),
-                    HeaderText(text: 'Upcoming Trip'),
-                    const CurrentBus(),
+                    const HeaderText(text: 'Upcoming Trip'),
+                    const UpcomingTrip(),
                   ],
                 ),
               ),
@@ -156,6 +170,7 @@ class HeaderText extends StatelessWidget {
 
 class FindTicket extends StatefulWidget {
   final Placemark placemark;
+
   FindTicket({super.key, required this.placemark});
 
   @override
@@ -166,6 +181,8 @@ class StateFindTicket extends State<FindTicket> {
   TextEditingController _dateController = TextEditingController();
   final TextEditingController _currentLocation = TextEditingController();
   final TextEditingController _destination = TextEditingController();
+  final TextEditingController _seats = TextEditingController();
+  final FocusNode _currentLocationFocusNode = FocusNode();
   Widget _gap() => const SizedBox(height: 20);
   @override
   Widget build(BuildContext context) {
@@ -210,6 +227,14 @@ class StateFindTicket extends State<FindTicket> {
                 Padding(
                   padding: EdgeInsets.all(9),
                   child: TextFormField(
+                    validator: (value){
+                      if(value == null || value.isEmpty){
+                        return 'Enter Current Location';
+                      }
+
+                      return null;
+                    },
+                    focusNode: _currentLocationFocusNode,
                     controller: _currentLocation,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(
@@ -217,11 +242,18 @@ class StateFindTicket extends State<FindTicket> {
                               BorderRadius.all(Radius.circular(15.0))),
                       labelText: 'Current Location',
                     ),
+                    autofocus: false,
                   ),
                 ),
                 Padding(
                   padding: EdgeInsets.all(13),
                   child: TextFormField(
+                    validator: (value){
+                      if(value == null || value.isEmpty){
+                        return 'Please enter destination';
+                      }
+                      return null;
+                    },
                     controller: _destination,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(
@@ -236,7 +268,13 @@ class StateFindTicket extends State<FindTicket> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: TextField(
+                        child: TextFormField(
+                          validator: (value) {
+                            if(value == null || value.isEmpty){
+                              return 'Enter a date';
+                            }
+                            return null; 
+                          },
                           controller: _dateController,
                           decoration: const InputDecoration(
                             border: OutlineInputBorder(
@@ -256,7 +294,15 @@ class StateFindTicket extends State<FindTicket> {
                         width: 15,
                       ),
                       Expanded(
-                        child: TextField(
+                        child: TextFormField(
+                          validator: (value){
+                            if(value == null || value.isEmpty){
+                              return 'Enter seats';
+                            }
+
+                            return null;
+                          },
+                          controller: _seats,
                           keyboardType: TextInputType.number,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly
@@ -278,7 +324,27 @@ class StateFindTicket extends State<FindTicket> {
                     child: ElevatedButton(
                       onPressed: () {
                         // Handle search trips action
-                        //redirect to tickets but with filter
+                        // Create a Filter object
+                        
+            Filter filter = Filter(
+              tripDate: DateTime.parse(_dateController.text),
+              destination: _destination.text,
+              currentLocation: _currentLocation.text,
+              seats: int.tryParse(_seats.text),
+            );
+
+            // Change to the tab with index 1 and pass the filter
+            Provider.of<TabIndex>(context, listen: false).changeIndex(1);
+
+            // Navigate to TicketList with the filter
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TicketList(filter: filter),
+              ),
+            );
+
+
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xff3DCAA0),
@@ -287,88 +353,124 @@ class StateFindTicket extends State<FindTicket> {
                         textStyle: TextStyle(fontSize: 16),
                       ),
                       child: const Text("Search Trips"),
-                    )),
+                    )
+                    ),
               ],
             )));
   }
 }
 
+class UpcomingTrip extends StatelessWidget{
+  const UpcomingTrip({super.key});
+
+  Future<Trip?> loadTrip()async{
+   final user_id =  global.user_id;
+   final role = global.role;
+
+   final request = '/ticket/search?role=$role&user_id=$user_id&filter=upcoming trip';
+   final response = await http.get(Uri.parse('https://bus-reservation-system-api.vercel.app$request'));
+   if(response.statusCode == 200){
+    final Map<String, dynamic> data = json.decode(response.body);
+
+      Trip trip = Trip.fromJson(data);
+
+      return trip;
+   }
+
+   return null;
+  }
+  DateTime convertToDateTime(int seconds, int nanoseconds) {
+    // Convert seconds to milliseconds
+    int millisecondsFromSeconds = seconds * 1000;
+
+    // Convert nanoseconds to milliseconds (1 nanosecond = 1/1,000,000 millisecond)
+    int millisecondsFromNanoseconds = nanoseconds ~/ 1000000;
+
+    // Combine both to get total milliseconds since the Unix epoch
+    int totalMilliseconds =
+        millisecondsFromSeconds + millisecondsFromNanoseconds;
+
+    // Create DateTime object from milliseconds since epoch
+    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(totalMilliseconds);
+
+    return dateTime;
+  }
+  @override
+  Widget build(BuildContext context) {
+    
+    return FutureBuilder(future: loadTrip(), builder: (context,snapshot){
+       if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData) {
+            return Padding(padding: EdgeInsets.all(25), child: Center(child:Text('No Upcoming Trip')));
+          } else {
+            DateTime dateTime = convertToDateTime(
+                            snapshot.data!.route!.tripDate!.seconds!,
+                            snapshot.data!.route!.tripDate!.nanoseconds!);
+            return TripCard(pickupLocation: snapshot.data!.route!.origin!, destination: snapshot.data!.route!.destination!, arrival: DateFormat('MMMM d, yyyy')
+                          .format(dateTime), departure: DateFormat('h:mma')
+                          .format(dateTime)
+                          .toLowerCase());
+          }
+    });
+  }
+}
 class CurrentBus extends StatelessWidget {
   const CurrentBus({super.key});
 
+  Future<Trip?> loadTrip()async{
+   final user_id =  global.user_id;
+   final role = global.role;
+
+   final request = '/ticket/search?role=$role&user_id=$user_id&filter=current bus';
+   final response = await http.get(Uri.parse('https://bus-reservation-system-api.vercel.app$request'));
+   if(response.statusCode == 200){
+    final Map<String, dynamic> data = json.decode(response.body);
+
+      Trip trip = Trip.fromJson(data);
+
+      return trip;
+   }
+
+   return null;
+  }
+  DateTime convertToDateTime(int seconds, int nanoseconds) {
+    // Convert seconds to milliseconds
+    int millisecondsFromSeconds = seconds * 1000;
+
+    // Convert nanoseconds to milliseconds (1 nanosecond = 1/1,000,000 millisecond)
+    int millisecondsFromNanoseconds = nanoseconds ~/ 1000000;
+
+    // Combine both to get total milliseconds since the Unix epoch
+    int totalMilliseconds =
+        millisecondsFromSeconds + millisecondsFromNanoseconds;
+
+    // Create DateTime object from milliseconds since epoch
+    DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(totalMilliseconds);
+
+    return dateTime;
+  }
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Lipa City",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "LPC",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-                Icon(Icons.arrow_forward, color: Colors.teal),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Malvar, Batangas",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "MLV",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "8:00 AM",
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-                Text(
-                  "9:30 AM",
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
+    
+    return FutureBuilder(future: loadTrip(), builder: (context,snapshot){
+       if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData) {
+            return Padding(padding: EdgeInsets.all(25), child: Center(child:Text('No Current Trip')));
+          } else {
+            DateTime dateTime = convertToDateTime(
+                            snapshot.data!.route!.tripDate!.seconds!,
+                            snapshot.data!.route!.tripDate!.nanoseconds!);
+            return TripCard(pickupLocation: snapshot.data!.route!.origin!, destination: snapshot.data!.route!.destination!, arrival: DateFormat('MMMM d, yyyy')
+                          .format(dateTime), departure: DateFormat('h:mma')
+                          .format(dateTime)
+                          .toLowerCase());
+          }
+    });
   }
 }
