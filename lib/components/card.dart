@@ -25,13 +25,13 @@ String localityInitials(String locality){
     final pickupLocation = widget.pickupLocation;
     final destination = widget.destination;
     final departure = widget.departure;
-    final arrival = widget.arrival;
+    final arrival = widget.arrival; //TODO :remove arrival and replace with trip date
       return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.grey[200],
+          color: Color(0xffF5F5F5),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -52,8 +52,9 @@ String localityInitials(String locality){
                     Text(
                       localityInitials(pickupLocation),
                       style: TextStyle(
+                        fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: Colors.grey,
+                        color: const Color(0xff3DCAA0),
                       ),
                     ),
                   ],
@@ -72,8 +73,9 @@ String localityInitials(String locality){
                     Text(
                       localityInitials(destination),
                       style: TextStyle(
+                        fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: Colors.grey,
+                        color:const Color(0xff3DCAA0),
                       ),
                     ),
                   ],
@@ -89,7 +91,7 @@ String localityInitials(String locality){
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
                 Text(
-                  arrival,
+                  arrival, //TODO : Change to Trip date instead
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
               ],
