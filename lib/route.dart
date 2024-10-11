@@ -20,46 +20,44 @@ class Map extends StatefulWidget {
 
 class MapState extends State<Map> {
 
+double distance = 0;
+double duration = 0;
 
-//* Getting Current Location
-  Future<Position> getCurrentLocation() async {
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        return Future.error('Location services are disabled');
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          return Future.error('Location Permission are denied');
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        return Future.error('Location permanently denied');
-      }
-
-      return await Geolocator.getCurrentPosition();
-    } catch (e) {
-      return Future.error('Failed to get current location: $e');
-    }
+@override
+  void initState() {
+    super.initState();
+    final trip = widget.trip;
+    String param_start = "${trip.originCoordinates.longitude},${trip.originCoordinates.latitude}";
+    String param_end = "${trip.destinationCoordinates.longitude},${trip.destinationCoordinates.latitude}";
+    futurePoints = getCoordinates(param_start, param_end);
+    setState(() {
+      
+    });
+    
   }
 
   List listOfPoints = [];
   List<LatLng> points = [];
-
+  late Future<List<LatLng>> futurePoints;
+void setDistanceDuration(double _distance,double _duration){
+setState((){
+        distance = _distance;
+      duration = _duration;
+      });
+}
   Future<List<LatLng>> getCoordinates(startPoint, endPoint) async {
     var response = await http.get(getRouteUrl(startPoint, endPoint));
 
     if (response.statusCode == 200) {
+      
       var data = jsonDecode(response.body);
+      
       listOfPoints = data['features'][0]['geometry']['coordinates'];
       points = listOfPoints
           .map((e) => LatLng(e[1].toDouble(), e[0].toDouble()))
           .toList();
 
+        setDistanceDuration(data['features'][0]['properties']['summary']['distance'], data['features'][0]['properties']['summary']['duration'] / 60);
       return points;
     } else {
       return Future.error('No Data');
@@ -74,15 +72,7 @@ class MapState extends State<Map> {
         body: Column(children: [
           SizedBox(
               height: 400,
-              child: FutureBuilder<Position>(
-                future: getCurrentLocation(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (snapshot.hasData) {
-                    return FlutterMap(
+              child:  FlutterMap(
                       mapController: MapController(),
                       options: MapOptions(
                         minZoom: 10,
@@ -123,9 +113,7 @@ class MapState extends State<Map> {
                         ),
                         FutureBuilder<List<LatLng>>(
                             //LatLng(trip.originCoordinates.latitude, trip.originCoordinates.longitude)
-                            future: getCoordinates(
-                                "${trip.originCoordinates.longitude},${trip.originCoordinates.latitude}",
-                                "${trip.destinationCoordinates.longitude},${trip.destinationCoordinates.latitude}"),
+                            future: futurePoints,
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
@@ -150,12 +138,10 @@ class MapState extends State<Map> {
                               }
                             }),
                       ],
-                    );
-                  } else {
-                    return const Center(child: Text('No data available'));
-                  }
-                },
-              )),
+                    )
+                  
+                ),
+              
           Expanded(
               child: SizedBox(
             child: Container(
@@ -166,9 +152,11 @@ class MapState extends State<Map> {
                     topRight: Radius.circular(15)),
                 color: Color(0xfff5f5f5),
               ),
-              child: BusLineRoute(
+              child: (distance != 0 && duration != 0) ? BusLineRoute(
+                distance: distance,
+                duration: duration,
                 trip: trip,
-              ), //TODO: ADD COMPONENTS
+              ) : const CircularProgressIndicator(), 
             ),
           )),
         ]));
@@ -176,8 +164,10 @@ class MapState extends State<Map> {
 }
 
 class BusLineRoute extends StatelessWidget {
+  final double distance;
+  final double duration;
   final Trip trip;
-  BusLineRoute({super.key, required this.trip});
+  BusLineRoute({super.key, required this.trip, required this.distance,required this.duration});
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -192,8 +182,8 @@ class BusLineRoute extends StatelessWidget {
                 'Bus Line Route',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              const Text(
-                '8km', //Distance Covered
+              Text(
+                '${(distance / 1000).toStringAsFixed(2)} km', //Distance Covered
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ],
